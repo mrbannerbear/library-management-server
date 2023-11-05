@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
+import cookieParser from 'cookie-parser'
 
 // Creating an express application
 const app = express()
@@ -12,8 +13,12 @@ const port = process.env.PORT || 4000
 
 // Middlewares
 app.use(express.json())
-app.use(cors())
 dotenv.config()
+app.use(cookieParser())
+app.use(cors({
+    origin: ["http://localhost:5173"],
+    credentials: true
+}))
 
 // Mongodb uri
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@library0.kdbnrjn.mongodb.net/?retryWrites=true&w=majority`;
@@ -33,6 +38,29 @@ app.get("/", (req, res) => {
 
 async function run() {
   try {
+
+
+       // token api
+       app.post("/jwt", async(req, res) => {
+        const user = req.body
+        const token = jwt.sign(user, process.env.TOKEN_KEY, { expiresIn: "5h" })
+        res
+        .cookie("accessToken", token, {
+            httpOnly: true,
+            secure: "false",
+            sameSite: "none"
+        })
+        .send({success: true})
+    })
+
+    app.post("/logout",  async(req, res) => {
+        const body = req.body
+        res
+        .clearCookie("token", { maxAge: 0 })
+        .send({loggedOut: true})
+    })
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
