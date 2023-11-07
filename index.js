@@ -74,14 +74,42 @@ async function run() {
 
     app.get("/books", async(req, res) => {
         const id = req.query.id
+        const category = req.query.category
         let query = {}
         if(id){
             query = { _id: new ObjectId(id) }
+        }
+        if(category){
+            query = { Category: category }
         }
         const result = await books.find(query).toArray()
         res.send(result)
     })
 
+    app.post("/books", async(req, res) => {
+        const body = req.body
+        const result = await books.insertOne(body)
+        res.send(result)
+    })
+
+    app.put("/books", async(req, res) => {
+        const id = req.query.id
+        const filter = { _id: new ObjectId(id) }
+        const body = req.body
+
+        const updatedBody = {
+            $set: {
+                Name: body.Name,
+                "Author Name": body["Author Name"], 
+                Rating: body.Rating, 
+                Image: body.Image,  
+                "Short description": body["Short description"],
+                Category: body.Category
+            }
+        }
+        const result = await books.updateOne(filter, updatedBody)
+        res.send(result)
+    })
 
 
     // Send a ping to confirm a successful connection
