@@ -1,4 +1,4 @@
-import { MongoClient, ServerApiVersion } from 'mongodb'
+import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb'
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
@@ -32,6 +32,10 @@ const client = new MongoClient(uri, {
   }
 });
 
+const database = client.db("library")
+const categories = database.collection("categories")
+const books = database.collection("books")
+
 app.get("/", (req, res) => {
     res.send("RUNNING")
 })
@@ -59,6 +63,25 @@ async function run() {
         .clearCookie("token", { maxAge: 0 })
         .send({loggedOut: true})
     })
+
+    // books api
+    app.get("/categories", async(req, res) => {
+        // const query = req.query
+        const result = await categories.find().toArray()
+        res.send(result)
+
+    })
+
+    app.get("/books", async(req, res) => {
+        const id = req.query.id
+        let query = {}
+        if(id){
+            query = { _id: new ObjectId(id) }
+        }
+        const result = await books.find(query).toArray()
+        res.send(result)
+    })
+
 
 
     // Send a ping to confirm a successful connection
