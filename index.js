@@ -35,6 +35,7 @@ const client = new MongoClient(uri, {
 const database = client.db("library")
 const categories = database.collection("categories")
 const books = database.collection("books")
+const borrowedInfo = database.collection("borrowedInfo")
 
 app.get("/", (req, res) => {
     res.send("RUNNING")
@@ -108,6 +109,26 @@ async function run() {
             }
         }
         const result = await books.updateOne(filter, updatedBody)
+        res.send(result)
+    })
+
+    app.get("/borrowedInfo", async(req, res) => {
+        const name = req.query.name
+        const book = req.query.book
+        let query = {}
+        if(name && book){
+            query = {
+                userName: name,
+                Name: book
+            }
+        }
+        const result = await borrowedInfo.find(query).toArray()
+        res.send(result)
+    })
+
+    app.post("/borrowedInfo", async(req, res) => {
+        const body = req.body
+        const result = await borrowedInfo.insertOne(body)
         res.send(result)
     })
 
