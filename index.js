@@ -17,7 +17,7 @@ dotenv.config();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5174"],
+    origin: ["http://localhost:5174", "https://library-management-c1d42.web.app", "https://library-management-c1d42.firebaseapp.com"],
     credentials: true,
   })
 );
@@ -82,7 +82,7 @@ async function run() {
         secure: process.env.NODE_ENV === "production" ? true: false,
         sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         }
-        )
+        ).send({loggedOut: true})
     });
 
     // books api
@@ -106,7 +106,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/books", async (req, res) => {
+    app.post("/books", tokenVerify, async (req, res) => {
       const body = req.body;
       const result = await books.insertOne(body);
       res.send(result);
